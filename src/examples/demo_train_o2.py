@@ -49,18 +49,38 @@ class TensorboardCallback(BaseCallback):
 # Create the environment
 env = make_vec_env(lambda: AntEnv(render_mode=None), n_envs=1)
 
+class CheckpointCallback(BaseCallback):
+    def __init__(self, save_freq=20000, save_path="./checkpoints", verbose=1):
+        super(CheckpointCallback, self).__init__(verbose)
+        self.save_freq = save_freq
+        self.save_path = save_path
+
+    def _init_callback(self):
+        os.makedirs(self.save_path, exist_ok=True)
+
+    def _on_step(self) -> bool:
+        if self.n_calls % self.save_freq == 0:
+            # create directory if not exist
+            os.makedirs(self.save_path, exist_ok=True)
+            checkpoint_file = os.path.join(self.save_path, f"ppo_ant_{self.n_calls}_steps")
+            self.model.save(checkpoint_file)
+            if self.verbose > 0:
+                print(f"Model checkpoint saved: {checkpoint_file}")
+        return True
+
 
 # Initialize the PPO model
-model = PPO("MlpPolicy", env, verbose=1, tensorboard_log="./logs/ppo_o2_tensorboard")
-# Reload a model if there is a saved one, make sure to set the environment correctly
-if os.path.exists("ppo_ant"):
+model = PPO("MlpPolicy", env, verbose=1, tensorboard_log="./logs/ppo_o2_tensorboard", policy_kwargs=dict(net_arch=[128, 128, 128]))
+# Reload a model if there is a saved one, make sure to set the environment correctly (it is saved as ppo_ant.zip)
+if os.path.exists("ppo_ant.zip"):
     model = PPO.load("ppo_ant", env=env)
 
 # Train the model with the visualization callback
 visualize_callback = VisualizeCallback(check_freq=20000)
 tensorboard_callback = TensorboardCallback()
+checkpoint_callback = CheckpointCallback()
 
-model.learn(total_timesteps=500000, callback=[visualize_callback, tensorboard_callback])
+model.learn(total_timesteps=5000000, callback=[visualize_callback, tensorboard_callback, checkpoint_callback])
 
 
 # Save the model
