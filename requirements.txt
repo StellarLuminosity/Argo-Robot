@@ -1,0 +1,7 @@
+gymnasium
+pandas
+numpy
+stable-baselines3[extra]
+matplotlib==3.8.0
+mujoco
+robot_descriptions
