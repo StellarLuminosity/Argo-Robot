@@ -1,3 +1,7 @@
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'src')))
+
 import gymnasium as gym
 from gym_custom_envs.o2_env import AntEnv
 
