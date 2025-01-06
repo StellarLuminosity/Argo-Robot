@@ -2,6 +2,7 @@ import numpy as np
 import mujoco
 import time
 from mujoco import viewer
+import matplotlib.pyplot as plt
 
 model = mujoco.MjModel.from_xml_path("mujoco_menagerie/unitree_go2/scene.xml")
 
@@ -18,6 +19,14 @@ timestep = 1 / framerate  # (seconds)
 # Simulate and display video.
 mujoco.mj_resetData(model, data)  # Reset state and time.
 
+states_legend = np.array([None for _ in range(data.qpos.shape[0])])
+# Print the association of qpos entries with joint names
+for i in range(model.njnt):
+    joint_name = mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_JOINT, i)
+    qpos_index = model.jnt_qposadr[i]
+    print(f"Joint '{joint_name}' starts at qpos index {qpos_index}")
+    states_legend[qpos_index] = joint_name
+states = []
 with mujoco.viewer.launch_passive(model, data) as viewer:
 
     start = time.time()
@@ -29,7 +38,8 @@ with mujoco.viewer.launch_passive(model, data) as viewer:
         # Apply random actions
         random_actions = np.random.uniform(-400, 400, size=model.nu)  # Random control inputs
         data.ctrl[:] = random_actions
-
+        
+        states.append(data.qpos[:].copy())
         mujoco.mj_step(model, data)
 
         # Example modification of a viewer option: toggle contact points every two seconds.
@@ -45,3 +55,8 @@ with mujoco.viewer.launch_passive(model, data) as viewer:
             time.sleep(time_until_next_step)
 
 
+# Plot the states
+states = np.array(states)
+plt.plot(states)
+plt.legend(states_legend)
+plt.show()
