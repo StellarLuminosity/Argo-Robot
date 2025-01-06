@@ -103,7 +103,7 @@ env/
 env.*
 venv/
 venv.*
-venv_trading/
+loco_env_python/
 
 # Spyder project settings
 .spyderproject
