@@ -11,13 +11,13 @@ data = mujoco.MjData(model)
 mujoco.mj_resetData(model, data)
 
 
+print(mujoco.__version__)
+
 
 duration = 3.8  # (seconds)
 framerate = 60  # (Hz)
 timestep = 1 / framerate  # (seconds)
 
-# Simulate and display video.
-mujoco.mj_resetData(model, data)  # Reset state and time.
 
 states_legend = np.array([None for _ in range(data.qpos.shape[0])])
 # Print the association of qpos entries with joint names
@@ -26,6 +26,8 @@ for i in range(model.njnt):
     qpos_index = model.jnt_qposadr[i]
     print(f"Joint '{joint_name}' starts at qpos index {qpos_index}")
     states_legend[qpos_index] = joint_name
+    
+# Simulate and display video.
 states = []
 with mujoco.viewer.launch_passive(model, data) as viewer:
 
