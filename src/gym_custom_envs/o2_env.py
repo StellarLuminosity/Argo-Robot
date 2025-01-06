@@ -229,19 +229,19 @@ class AntEnv(MujocoEnv, utils.EzPickle):
     def __init__(
         self,
         xml_file: str = "./mujoco_menagerie/unitree_go2/scene.xml",
-        frame_skip: int = 5,
+        frame_skip: int = 25,
         default_camera_config: Dict[str, Union[float, int]] = DEFAULT_CAMERA_CONFIG,
-        forward_reward_weight: float = 1,
-        ctrl_cost_weight: float = 0.5,
+        forward_reward_weight: float = 100,
+        ctrl_cost_weight: float = 0.005,
         contact_cost_weight: float = 5e-4,
         healthy_reward: float = 1.0,
         main_body: Union[int, str] = 1,
         terminate_when_unhealthy: bool = True,
-        healthy_z_range: Tuple[float, float] = (0.2, 1.0),
+        healthy_z_range: Tuple[float, float] = (0.22, 10.0),  # set to avoid sampling steps where the robot has fallen or jumped too high
         contact_force_range: Tuple[float, float] = (-1.0, 1.0),
         reset_noise_scale: float = 0.1,
-        exclude_current_positions_from_observation: bool = True,
-        include_cfrc_ext_in_observation: bool = True,
+        exclude_current_positions_from_observation: bool = False,
+        include_cfrc_ext_in_observation: bool = False,
         **kwargs,
     ):
         utils.EzPickle.__init__(
