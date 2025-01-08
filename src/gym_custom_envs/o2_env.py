@@ -238,10 +238,10 @@ class AntEnv(MujocoEnv, utils.EzPickle):
         healthy_reward: float = 1.0,
         main_body: Union[int, str] = 1,
         terminate_when_unhealthy: bool = True,
-        healthy_z_range: Tuple[float, float] = (0.22, 10.0),  # set to avoid sampling steps where the robot has fallen or jumped too high
+        healthy_z_range: Tuple[float, float] = (0.23, 1.0),  # set to avoid sampling steps where the robot has fallen or jumped too high
         contact_force_range: Tuple[float, float] = (-1.0, 1.0),
         reset_noise_scale: float = 0.1,
-        exclude_current_positions_from_observation: bool = False,
+        exclude_current_positions_from_observation: bool = True,
         include_cfrc_ext_in_observation: bool = False,
         **kwargs,
     ):
@@ -253,6 +253,7 @@ class AntEnv(MujocoEnv, utils.EzPickle):
             forward_reward_weight,
             ctrl_cost_weight,
             contact_cost_weight,
+            action_rate_cost_weight,
             healthy_reward,
             main_body,
             terminate_when_unhealthy,
@@ -267,6 +268,7 @@ class AntEnv(MujocoEnv, utils.EzPickle):
         self._forward_reward_weight = forward_reward_weight
         self._ctrl_cost_weight = ctrl_cost_weight
         self._contact_cost_weight = contact_cost_weight
+        self._action_rate_cost_weight = action_rate_cost_weight
 
         self._healthy_reward = healthy_reward
         self._terminate_when_unhealthy = terminate_when_unhealthy
@@ -302,7 +304,7 @@ class AntEnv(MujocoEnv, utils.EzPickle):
             "render_fps": int(np.round(1.0 / self.dt)),
         }
 
-        obs_size = self.data.qpos.size + self.data.qvel.size
+        obs_size = self.data.qpos.size + self.data.qvel.size + self.action_space.shape[0]
         obs_size -= 2 * exclude_current_positions_from_observation
         obs_size += self.data.cfrc_ext[1:].size * include_cfrc_ext_in_observation
 
@@ -311,21 +313,29 @@ class AntEnv(MujocoEnv, utils.EzPickle):
         )
 
         self.observation_structure = {
-            "skipped_qpos": 2 * exclude_current_positions_from_observation,
-            "qpos": self.data.qpos.size
-            - 2 * exclude_current_positions_from_observation,
+            "skipped_qpos": 2 * exclude_current_positions_from_observation,  
+            "qpos": self.data.qpos.size - 2 * exclude_current_positions_from_observation,
             "qvel": self.data.qvel.size,
+            "last_action": self.action_space.shape[0],
             "cfrc_ext": self.data.cfrc_ext[1:].size * include_cfrc_ext_in_observation,
         }
+        
+        self._last_action = np.zeros(self.action_space.shape)
 
     @property
     def healthy_reward(self):
         return self.is_healthy * self._healthy_reward
 
-    def control_cost(self, action):
-        control_cost = self._ctrl_cost_weight * np.sum(np.square(action))
+    @property
+    def control_cost(self):
+        # l2 norm of torques (action are positions, so retrive torques, do not use actions)
+        control_cost = self._ctrl_cost_weight * np.sum(np.square(self.data.qfrc_actuator))
         return control_cost
 
+    def action_rate_cost(self, action):
+        action_rate_cost = self._action_rate_cost_weight * np.sum(np.square(action - self._last_action))
+        return action_rate_cost
+    
     @property
     def contact_forces(self):
         raw_contact_forces = self.data.cfrc_ext
@@ -370,6 +380,7 @@ class AntEnv(MujocoEnv, utils.EzPickle):
         if self.render_mode == "human":
             self.render()
         # truncation=False as the time limit is handled by the `TimeLimit` wrapper added during `make`
+        self._last_action = action.copy()
         return observation, reward, terminated, False, info
 
     def _get_rew(self, x_velocity: float, action):
@@ -377,9 +388,11 @@ class AntEnv(MujocoEnv, utils.EzPickle):
         healthy_reward = self.healthy_reward
         rewards = forward_reward + healthy_reward
 
-        ctrl_cost = self.control_cost(action)
+        # Penalities
+        ctrl_cost = self.control_cost
         contact_cost = self.contact_cost
-        costs = ctrl_cost + contact_cost
+        action_rate_cost = self.action_rate_cost(action)
+        costs = ctrl_cost + contact_cost + action_rate_cost
 
         reward = rewards - costs
 
@@ -387,6 +400,7 @@ class AntEnv(MujocoEnv, utils.EzPickle):
             "reward_forward": forward_reward,
             "reward_ctrl": -ctrl_cost,
             "reward_contact": -contact_cost,
+            "reward_action_rate": -action_rate_cost,
             "reward_survive": healthy_reward,
         }
 
@@ -395,15 +409,16 @@ class AntEnv(MujocoEnv, utils.EzPickle):
     def _get_obs(self):
         position = self.data.qpos.flatten()
         velocity = self.data.qvel.flatten()
-
+        last_action = self._last_action.flatten()
+        
         if self._exclude_current_positions_from_observation:
             position = position[2:]
 
         if self._include_cfrc_ext_in_observation:
             contact_force = self.contact_forces[1:].flatten()
-            return np.concatenate((position, velocity, contact_force))
+            return np.concatenate((position, velocity, last_action, contact_force))
         else:
-            return np.concatenate((position, velocity))
+            return np.concatenate((position, velocity, last_action))
 
     def reset_model(self):
         noise_low = -self._reset_noise_scale

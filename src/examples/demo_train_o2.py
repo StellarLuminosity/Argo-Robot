@@ -45,6 +45,7 @@ class TensorboardCallback(BaseCallback):
             self.logger.record("env/reward_ctrl", info.get("reward_ctrl", 0))
             self.logger.record("env/reward_contact", info.get("reward_contact", 0))
             self.logger.record("env/reward_survive", info.get("reward_survive", 0))
+            self.logger.record("env/reward_action_rate", info.get("reward_action_rate", 0))
         return True
 # Create the environment
 env = make_vec_env(lambda: AntEnv(render_mode=None), n_envs=1)
