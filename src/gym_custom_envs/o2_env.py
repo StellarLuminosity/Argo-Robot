@@ -14,6 +14,7 @@ DEFAULT_CAMERA_CONFIG = {
 
 class AntEnv(MujocoEnv, utils.EzPickle):
     r"""
+    ## ASSUMPTION: The actuators are position based
     ## Description
     This environment is based on the one introduced by Schulman, Moritz, Levine, Jordan, and Abbeel in ["High-Dimensional Continuous Control Using Generalized Advantage Estimation"](https://arxiv.org/abs/1506.02438).
     The ant is a 3D quadruped robot consisting of a torso (free rotational body) with four legs attached to it, where each leg has two body parts.
@@ -228,7 +229,7 @@ class AntEnv(MujocoEnv, utils.EzPickle):
 
     def __init__(
         self,
-        xml_file: str = "./mujoco_menagerie/unitree_go2/scene.xml",
+        xml_file: str = "./mujoco_menagerie/unitree_go1/scene.xml",
         frame_skip: int = 25,
         default_camera_config: Dict[str, Union[float, int]] = DEFAULT_CAMERA_CONFIG,
         forward_reward_weight: float = 100,

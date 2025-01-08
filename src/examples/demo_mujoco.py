@@ -4,7 +4,7 @@ import time
 from mujoco import viewer
 import matplotlib.pyplot as plt
 
-model = mujoco.MjModel.from_xml_path("mujoco_menagerie/unitree_go2/scene.xml")
+model = mujoco.MjModel.from_xml_path("mujoco_menagerie/unitree_go1/scene.xml")
 
 # Initialize simulation.
 data = mujoco.MjData(model)
@@ -38,7 +38,7 @@ with mujoco.viewer.launch_passive(model, data) as viewer:
         # mj_step can be replaced with code that also evaluates
         # a policy and applies a control signal before stepping the physics.
         # Apply random actions
-        random_actions = np.random.uniform(-400, 400, size=model.nu)  # Random control inputs
+        random_actions = np.random.uniform(-1, 1, size=model.nu)  # Random control inputs
         data.ctrl[:] = random_actions
         
         states.append(data.qpos[:].copy())
