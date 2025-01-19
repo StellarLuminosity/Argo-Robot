@@ -20,6 +20,11 @@ cd rsl_rl
 pip install -e .
 cd ..
 
+
+# Install Genesis
+cd genesis
+pip install -e .
+cd ..
 ```
 
 ## Usage
