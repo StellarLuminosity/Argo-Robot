@@ -1,6 +1,6 @@
-[submodule "mujoco_menagerie"]
-	path = mujoco_menagerie
-	url = git@github.com:google-deepmind/mujoco_menagerie.git
 [submodule "src/rsl_rl"]
 	path = src/rsl_rl
 	url = git@github.com:leggedrobotics/rsl_rl.git
+[submodule "genesis"]
+	path = genesis
+	url = git@github.com:Genesis-Embodied-AI/Genesis.git
