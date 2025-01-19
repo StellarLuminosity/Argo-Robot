@@ -4,13 +4,23 @@ A reinforcement learning project for robot locomotion using RSL-RL framework.
 
 ## Setup
 
-1. Create and activate virtual environment:
+1. Clone the repository:
+```bash
+git clone git@github.com:FedeAi/locomotion-p0.git --recursive
+cd locomotion-p0
+```
+2. Initialize the submodules:
+```bash
+git submodule update --init --recursive
+```
+
+4. Create and activate virtual environment:
 ```bash
 python3 -m venv venv
 source venv/bin/activate
 ```
 
-2. Install dependencies:
+5. Install dependencies:
 ```bash
 # Core dependencies
 pip install -r requirements.txt
