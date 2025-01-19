@@ -1,8 +1,8 @@
 
+import os
 import argparse
 import pickle
 import shutil
-
 from go2_env import Go2Env
 from rsl_rl.runners import OnPolicyRunner
 
