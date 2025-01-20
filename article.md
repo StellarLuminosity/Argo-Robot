@@ -7,6 +7,9 @@
 ## Problem Overview
 Dog, joystick -> objective tracking
 
+DICIAMO ANCHE DEL SALTO O NO? VEDI ANCHE REWARDS CHAPTER
+
+
 ## Ingredients and RL Framework
 What is needed to create a control policy | What is a control policy
 simulatore / environment (URDF)
@@ -47,9 +50,9 @@ In our case, the robot's observation space will be composed of both the robot's 
 
 The main components of the observation space taking into account internal states are as follows:
 
-- **Base Linear Velocities**: $ Vx, Vy, Vz $
+- **Base Linear Velocities**: $ v_x, v_y, v_z $
 
-- **Base Rotational Velocities**: $ Wx, Wy, Wz $
+- **Base Rotational Velocities**: $ w_x, w_y, w_z $
 
 - **Orientation Angles**: $ \textit{roll, pitch} $
 
@@ -61,19 +64,104 @@ The main components of the observation space taking into account internal states
 
 In addition to the robot's internal state, user commands are also incorporated into the observation space to allow for manual control. These commands come from an operator moving the robot through a joystick, so that their value will be in the range $[-1, 1]$. Thus, the observation space will be enlarged with the following user command inputs:
 
-- **Reference Linear Velocities**: $Vx_{ref}, Vy_{ref}, Wz_{ref} \in [-1, 1]$
+- **Reference Velocities**: $v^{ref}_{x}, v^{ref}_{y}, w^{ref}_{z} \in [-1, 1]$
 
 - **Reference Robot Altitude**: $z_{ref} \in [-1, 1]$ 
 
 With all these components combined, the final observation space is of the following dimensionality: $ \mathbb{R}^{TBD} $  
 
-### 4.3 Reward Design
+### 4.3 Reward Design ( --> COSA FACCIAMO COL SALTO?)
 
-The goal is to make our robot learning to walk following desired speed and altitude references given by an user. The core idea behind reinforcement learning is giving rewards when the agent behaves as expected, and punishing it when it behaves far from the desired behaviour.
+The goal of the reward design is to guide the robot to walk effectively while adhering to user-specified references for speed and altitude. In reinforcement learning, the agent is encouraged to maximize its cumulative reward, which is designed to reflect the desired behavior. Rewards are given for achieving objectives, and penalties are applied when deviations occur. Below, we outline the specific reward terms used in our implementation, based on the provided code.
 
-So, the rewards chosen are:
+#### 1. **Linear Velocity Tracking Reward**
 
+The robot is encouraged to track $v_x, v_y$ references commanded by the user.
 
+$$
+R_{lin\_vel} = \exp[-\|v^{ref}_{xy} - v_{xy}\|^2]
+$$
+
+Where:
+- $v^{ref}_{xy} = [v^{ref}_{x}, v^{ref}_{y}]$ is the commanded velocity.
+- $v_{xy} = [v_x, v_y]$ is the actual velocity.
+
+#### 2. **Angular Velocity Tracking Reward**
+
+The robot is encouraged to track $w_z$ reference commanded by the user.
+
+$$
+R_{ang\_vel} = \exp[-(w^{ref}_{z} - w_{z})^2]
+$$
+
+Where:
+- $w_{cmd,z}$ is the commanded yaw velocity.
+- $w_{base,z}$ is the actual yaw velocity.
+
+#### 3. **Height Penalty**
+
+The robot is encouraged to maintain a desired height as specified by the commanded altitude. A penalty is applied for deviations from this target height:
+
+$$
+R_{z} = m_{active} \cdot (z - z_{ref})^2
+$$
+
+Where:
+- $z$ is the current base height.
+- $z_{ref}$ is the target height specified in the commands.
+
+#### 4. **Pose Similarity Reward** ( --> PROVEREI A TOGLIERLA E VEDERE SE IMPARA)
+
+To keep the robot's joint poses close to a default configuration, a penalty is applied for large deviations from the default joint positions:
+
+$$
+R_{pose\_similarity} = m_{active} \cdot \|q - q_{default}\|^2
+$$
+
+Where:
+- $q$ is the current joint position.
+- $q_{default}$ is the default joint position.
+
+#### 5. **Action Rate Penalty**
+
+To ensure smooth control and discourage abrupt changes in actions, a penalty is applied based on the difference between consecutive actions:
+
+$$
+R_{action\_rate} = m_{active} \cdot \|a_{t} - a_{t-1}\|^2
+$$
+
+Where:
+- $a_t$ and $a_{t-1}$ are the actions at the current and previous time steps, respectively.
+- $m_{active}$ is the same activation mask as above.
+
+#### 6. **Vertical Velocity Penalty**
+
+To discourage unnecessary movement along the vertical ($z$) axis, a penalty is applied to the squared $z$-axis velocity of the base when the robot is not actively jumping. The reward is:
+
+$$
+R_{lin\_vel\_z} = m_{active} \cdot v_{z}^2
+$$
+
+Where:
+- $v_{z}$ is the vertical velocity of the base.
+- $m_{active}$ is an activation mask, which is $1$ when jumping is not toggled and $0$ otherwise.
+
+#### 7. **Roll and Pitch Stabilization Penalty**
+
+To ensure the robot maintains stability, a penalty is applied to discourage large roll and pitch deviations of the base. This reward is:
+
+$$
+R_{roll\_pitch} = m_{active} \cdot (roll^2 + pitch^2)
+$$
+
+Where:
+- $roll$ is the roll angle of the base.
+- $pitch$ is the pitch angle of the base.
+- $m_{active}$ is an activation mask, which is $1$ when jumping is not toggled and $0$ otherwise.
+
+---
+
+This design ensures that the robot learns a balanced policy that prioritizes tracking commands, maintaining stability, and acting smoothly while adhering to physical constraints.
 
 ### 4.4 Episode trmination condition
 
@@ -173,12 +261,64 @@ IMU_std = np.random.uniform(self.min_IMU_std, self.max_IMU_std)
 
 By using domain randomization, robotic systems become more adaptable to the real world, and can handle scenarios that they were never directly trained on in simulation. However, a limitation of this approach is that the robot will learn a conservative policy able to generalize on different scenarios, rather than an optimal one tailored to specific conditions.
 
-### 6.2 Adaptation strategies
+### 6.2 Adaptation Strategies
 
+To improve the generalization of the robot across various environments, the policy can be conditioned on environment parameters $(\mu)$. By doing so, the robot can adjust its actions based on both its internal state and the dynamics of the environment. However, in real-world scenarios, these environment parameters are not precisely known. If they were, the problem would already be solved. 
 
+#### Latent Representation of Environment Parameters
 
+Fortunately, in simulation, the environment parameters are fully available. In this way, at the beginning of each training episode, a random set of environment parameters $\mu$ is sampled according to a probability distribution $p(\mu)$. These parameters can include friction, latency, sensor noise and other factors that influence the dynamics. Predicting the exact system parameters $\mu$ is often unnecessary and impractical, as it may lead to overfitting and poor real-world performance. Instead, a low-dimensional latent embedding $z$ is used. Once $\mu$ is sampled, the environment parameters are encoded into a compact latent space $z$ using an encoder function $e$, represented as:
 
-## Key Works and Citations
+$$
+z_t = e(\mu_t)
+$$
+
+Here, $z_t$ serves as a concise representation of the environment's dynamics. This latent variable is then fed as an additional input to the robot’s policy, enabling it to adapt its actions based on the environment:
+
+$$
+\pi(a_t \mid o_t, z_t)
+$$
+
+Where:
+- $a_t$: Action to be taken by the robot.
+- $o_t$: Observations.
+- $z_t$: Latent encoding of the environment's dynamics.
+
+#### Training the Policy
+
+During training, both the encoder $e$ and policy $\pi$ are jointly optimized using gradient descent based on the reward signals, as a typical reinforcement learning problem. 
+
+#### Real-World Deployment: Adaptation Module
+
+In real-world deployment, the robot does not have access to the privileged environment parameters $\mu$. Instead, an *adaptation module* $(\phi)$ is employed to estimate the latent variable $\hat{z}_t$ online. This estimate is derived from the recent history of the robot's states $(x_{t-k:t-1})$ and actions $(a_{t-k:t-1})$:
+
+$$
+\hat{z}_t = \phi(x_{t-k:t-1}, a_{t-k:t-1})
+$$
+
+Unlike traditional system identification approaches that attempt to predict the precise environmental parameters $\mu$, this method directly estimates $\hat{z}_t$.
+
+#### Training the Adaptation Module
+
+The adaptation module $\phi$ is trained in simulation, where both the state-action history and the ground truth extrinsics vector $z_t$ are available. This is a typical supervised learning problem, where the objective is to minimize the **mean squared error (MSE)** between $\hat{z}_t$ and $z_t$:
+
+$$
+\text{MSE}(\hat{z}_t, z_t) = \| \hat{z}_t - z_t \|^2
+$$
+
+This training process ensures that the adaptation module learns to accurately predict $\hat{z}_t$ based on historical data.
+
+#### Deployment
+
+Once trained, the adaptation module and policy are ready for real-world deployment. The policy operates as follows:
+
+$$
+\pi(a_t \mid o_t, \hat{z}_t)
+$$
+
+The adaptation module $\phi$ runs asynchronously at a slower frequency, periodically updating $\hat{z}_t$. The policy uses the most recent $\hat{z}_t$ along with the current observations to determine the robot's actions. This design enables robust and efficient performance across diverse real-world environments while maintaining computational efficiency.
+
+## 7. Key Works and Citations
 
 - **Ashish Kumar (2022)**: [*Adapting Rapid Motor Adaptation for Bipedal Robots*](https://arxiv.org/pdf/2205.15299)
 - **Ashish Kumar (2021)**: [*RMA: Rapid Motor Adaptation for Legged Robots*](https://arxiv.org/pdf/2107.04034)
