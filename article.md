@@ -70,7 +70,7 @@ In addition to the robot's internal state, user commands are also incorporated i
 
 With all these components combined, the final observation space is of the following dimensionality: $ \mathbb{R}^{TBD} $  
 
-### 4.3 Reward Design ( --> COSA FACCIAMO COL SALTO?)
+### 4.3 Reward Design
 
 The goal of the reward design is to guide the robot to walk effectively while adhering to user-specified references for speed and altitude. In reinforcement learning, the agent is encouraged to maximize its cumulative reward, which is designed to reflect the desired behavior. Rewards are given for achieving objectives, and penalties are applied when deviations occur. Below, we outline the specific reward terms used in our implementation, based on the provided code.
 
@@ -103,7 +103,7 @@ Where:
 The robot is encouraged to maintain a desired height as specified by the commanded altitude. A penalty is applied for deviations from this target height:
 
 $$
-R_{z} = m_{active} \cdot (z - z_{ref})^2
+R_{z} = (z - z_{ref})^2
 $$
 
 Where:
@@ -115,7 +115,7 @@ Where:
 To keep the robot's joint poses close to a default configuration, a penalty is applied for large deviations from the default joint positions:
 
 $$
-R_{pose\_similarity} = m_{active} \cdot \|q - q_{default}\|^2
+R_{pose\_similarity} = \|q - q_{default}\|^2
 $$
 
 Where:
@@ -127,37 +127,34 @@ Where:
 To ensure smooth control and discourage abrupt changes in actions, a penalty is applied based on the difference between consecutive actions:
 
 $$
-R_{action\_rate} = m_{active} \cdot \|a_{t} - a_{t-1}\|^2
+R_{action\_rate} = \|a_{t} - a_{t-1}\|^2
 $$
 
 Where:
 - $a_t$ and $a_{t-1}$ are the actions at the current and previous time steps, respectively.
-- $m_{active}$ is the same activation mask as above.
 
 #### 6. **Vertical Velocity Penalty**
 
 To discourage unnecessary movement along the vertical ($z$) axis, a penalty is applied to the squared $z$-axis velocity of the base when the robot is not actively jumping. The reward is:
 
 $$
-R_{lin\_vel\_z} = m_{active} \cdot v_{z}^2
+R_{lin\_vel\_z} = v_{z}^2
 $$
 
 Where:
 - $v_{z}$ is the vertical velocity of the base.
-- $m_{active}$ is an activation mask, which is $1$ when jumping is not toggled and $0$ otherwise.
 
 #### 7. **Roll and Pitch Stabilization Penalty**
 
 To ensure the robot maintains stability, a penalty is applied to discourage large roll and pitch deviations of the base. This reward is:
 
 $$
-R_{roll\_pitch} = m_{active} \cdot (roll^2 + pitch^2)
+R_{roll\_pitch} = roll^2 + pitch^2
 $$
 
 Where:
 - $roll$ is the roll angle of the base.
 - $pitch$ is the pitch angle of the base.
-- $m_{active}$ is an activation mask, which is $1$ when jumping is not toggled and $0$ otherwise.
 
 ---
 
