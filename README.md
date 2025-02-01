@@ -6,8 +6,8 @@ A reinforcement learning project for robot locomotion using RSL-RL framework.
 
 1. Clone the repository:
 ```bash
-git clone git@github.com:FedeAi/locomotion-p0.git --recursive
-cd locomotion-p0
+git clone git@github.com:Argo-Robot/quadrupeds_locomotion.git --recursive
+cd quadrupeds_locomotion
 ```
 2. Initialize the submodules:
 ```bash
@@ -46,7 +46,7 @@ python src/go2_train.py --exp_name="my_experiment" --max_iterations=1000
 
 ## Project Structure
 ```
-locomotion-p0/
+quadrupeds_locomotion/
 ├── src/
 │   ├── go2_train.py    # Training script
 │   └── go2_env.py      # Environment
