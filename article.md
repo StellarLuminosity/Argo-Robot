@@ -362,9 +362,9 @@ During training, both the encoder $e$ and policy $\pi$ are jointly optimized usi
 
 In real-world deployment, the robot does not have access to the privileged environment parameters $\mu$. Instead, an *adaptation module* $(\phi)$ is employed to estimate the latent variable $\hat{z}_t$ online. This estimate is derived from the recent history of the robot's states $(x_{t-k:t-1})$ and actions $(a_{t-k:t-1})$:
 
-$$
+```math
 \hat{z}_t = \phi(x_{t-k:t-1}, a_{t-k:t-1})
-$$
+```
 
 Unlike traditional system identification approaches that attempt to predict the precise environmental parameters $\mu$, this method directly estimates $\hat{z}_t$.
 
