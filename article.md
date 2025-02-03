@@ -100,9 +100,9 @@ The goal of the reward design is to guide the robot to walk effectively while ad
 
 The robot is encouraged to track $v_x, v_y$ references commanded by the user.
 
-$$
+```math
 R_{lin\_vel} = \exp[-\|v^{ref}_{xy} - v_{xy}\|^2]
-$$
+```
 
 Where:
 - $v^{ref}_{xy} = [v^{ref}_{x}, v^{ref}_{y}]$ is the commanded velocity.
@@ -112,9 +112,9 @@ Where:
 
 The robot is encouraged to track $w_z$ reference commanded by the user.
 
-$$
+```math
 R_{ang\_vel} = \exp[-(w^{ref}_{z} - w_{z})^2]
-$$
+```
 
 Where:
 - $w_{cmd,z}$ is the commanded yaw velocity.
@@ -189,7 +189,7 @@ During training, episodes are terminated when specific criteria are met to ensur
 - $| \textit{roll} | < \textit{roll}_{\textit{min}}$: Robot roll is below a certain threshold.  
 - $| \textit{pitch} | < \textit{pitch}_{\textit{min}}$: Robot pitch is below a certain threshold.  
 - $z > z_{\textit{min}}$: Robot altitude is above a minimum value.  
-- $\textit{steps} \geq \textit{max\_steps}$: Maximum number of steps reached.  
+- $\textit{steps} \geq \textit{max_steps}$: Maximum number of steps reached.  
 
 Here is an implementation for checking whether the robot is in a healthy state:
 
@@ -244,9 +244,9 @@ Reinforcement Learning (RL) formulates the control problem as a Markov Decision 
 
 The objective function in RL is:
 
-$$
+```math
 J(\theta) = \mathbb{E}_{\tau \sim \pi_{\theta}} \left[ \sum_{t=0}^{T} \gamma^t r_t \right]
-$$
+```
 
 where:
 - $\theta$ are the policy parameters,
@@ -372,9 +372,9 @@ Unlike traditional system identification approaches that attempt to predict the 
 
 The adaptation module $\phi$ is trained in simulation, where both the state-action history and the ground truth extrinsics vector $z_t$ are available. This is a typical supervised learning problem, where the objective is to minimize the **mean squared error (MSE)** between $\hat{z}_t$ and $z_t$:
 
-$$
+```math
 \text{MSE}(\hat{z}_t, z_t) = \| \hat{z}_t - z_t \|^2
-$$
+```
 
 This training process ensures that the adaptation module learns to accurately predict $\hat{z}_t$ based on historical data.
 
