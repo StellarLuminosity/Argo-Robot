@@ -19,7 +19,7 @@ def gs_additive(base, increment):
 
 
 class Go2Env:
-    def __init__(self, num_envs, env_cfg, obs_cfg, reward_cfg, command_cfg, show_viewer=False, device="cuda"):
+    def __init__(self, num_envs, env_cfg, obs_cfg, reward_cfg, command_cfg, show_viewer=False, device="cuda", add_camera = False):
         self.device = torch.device(device)
 
         self.num_envs = num_envs
@@ -45,11 +45,11 @@ class Go2Env:
             sim_options=gs.options.SimOptions(dt=self.dt, substeps=2),
             viewer_options=gs.options.ViewerOptions(
                 max_FPS=int(0.5 / self.dt),
-                camera_pos=(2.0, 0.0, 2.5),
+                camera_pos=(3.5, 0.5, 2.5),
                 camera_lookat=(0.0, 0.0, 0.5),
                 camera_fov=40,
             ),
-            vis_options=gs.options.VisOptions(n_rendered_envs=1),
+            vis_options=gs.options.VisOptions(n_rendered_envs=num_envs, show_world_frame=False),
             rigid_options=gs.options.RigidOptions(
                 dt=self.dt,
                 constraint_solver=gs.constraint_solver.Newton,
@@ -73,9 +73,19 @@ class Go2Env:
                 quat=self.base_init_quat.cpu().numpy(),
             ),
         )
+        
+        # self.cam_0 : gs.Camera = None
+        if add_camera:
+            self.cam_0 = self.scene.add_camera(
+                res=(1920, 1080),
+                pos=(2.5, 0.5, 3.5),
+                lookat=(0, 0, 0.5),
+                fov=40,
+                GUI=True,
+            )
 
         # build
-        self.scene.build(n_envs=num_envs)
+        self.scene.build(n_envs=num_envs, env_spacing=(1.0, 1.0))
 
         # names to indices
         self.motor_dofs = [self.robot.get_joint(name).dof_idx_local for name in self.env_cfg["dof_names"]]

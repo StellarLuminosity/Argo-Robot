@@ -5,3 +5,4 @@ imageio
 wandb
 moviepy
 tensorboard
+pynput

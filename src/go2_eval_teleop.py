@@ -15,9 +15,10 @@ ang_z = 0.0
 base_height = 0.3
 jump_height = 0.7
 toggle_jump = False
+stop = False
 
 def on_press(key):
-    global lin_x, lin_y, ang_z, base_height, toggle_jump, jump_height
+    global lin_x, lin_y, ang_z, base_height, toggle_jump, jump_height, stop
     try:
         if key.char == 'w':
             lin_x += 0.1
@@ -41,7 +42,16 @@ def on_press(key):
             jump_height += 0.1
         elif key.char == 'm':
             jump_height -= 0.1
+        elif key.char == '8':
+            stop = True
             
+        
+        lin_x = np.clip(lin_x, -1.0, 2.0)
+        lin_y = np.clip(lin_y, -0.5, 0.5)
+        ang_z = np.clip(ang_z, -0.6, 0.6)
+        base_height = np.clip(base_height, 0.1, 0.5)
+        jump_height = np.clip(jump_height, 0.5, 1.5)
+        
             
         # Clear the console
         os.system('clear')
@@ -56,10 +66,11 @@ def on_release(key):
         return False
 
 def main():
-    global lin_x, lin_y, ang_z, base_height, toggle_jump, jump_height
+    global lin_x, lin_y, ang_z, base_height, toggle_jump, jump_height, stop
     parser = argparse.ArgumentParser()
     parser.add_argument("-e", "--exp_name", type=str, default="go2-walking")
-    parser.add_argument("--ckpt", type=int, default=700)
+    parser.add_argument("--ckpt", type=int, default=900)
+    parser.add_argument("--save-data", type=bool, default=False)
     args = parser.parse_args()
 
     gs.init(
@@ -75,15 +86,17 @@ def main():
 
     env_cfg["termination_if_roll_greater_than"] =  50  # degree
     env_cfg["termination_if_pitch_greater_than"] = 50  # degree
-
+    num_envs = 50
     env = Go2Env(
-        num_envs=1,
+        num_envs=num_envs,
         env_cfg=env_cfg,
         obs_cfg=obs_cfg,
         reward_cfg=reward_cfg,
         command_cfg=command_cfg,
         show_viewer=True,
+        add_camera=True,
     )
+    
     
     runner = OnPolicyRunner(env, train_cfg, log_dir, device="cuda:0")
     resume_path = os.path.join(log_dir, f"model_{args.ckpt}.pt")
@@ -92,7 +105,7 @@ def main():
 
     obs, _ = env.reset()
     
-    env.commands = torch.tensor([[lin_x, lin_y, ang_z, base_height, toggle_jump*jump_height]]).to("cuda:0")
+    env.commands = torch.tensor([[lin_x, lin_y, ang_z, base_height, toggle_jump*jump_height]]).to("cuda:0").repeat(num_envs, 1)
     iter = 0
 
     # Start keyboard listener
@@ -100,11 +113,17 @@ def main():
     listener.start()
 
     reset_jump_toggle_iter = 0
+    images_buffer = []
+    commands_buffer = []
     with torch.no_grad():
-        while True:
+        while not stop:
+            
+            # env.cam_0.set_pose(lookat=env.base_pos.cpu().numpy()[0],)
+            # env.cam_0.set_pose(pos=env.base_pos.cpu().numpy()[0] + np.array([0.5, 0.0, 0.5]) * iter / 50, lookat=env.base_pos.cpu().numpy()[0],)
+                
             actions = policy(obs)
             # print(f"toggle_jump: {toggle_jump}, jump_height: {jump_height}")
-            env.commands = torch.tensor([[lin_x, lin_y, ang_z, base_height, toggle_jump*jump_height]]).to("cuda:0")
+            env.commands = torch.tensor([[lin_x, lin_y, ang_z, base_height, toggle_jump*jump_height]]).to("cuda:0").repeat(num_envs, 1)
             obs, _, rews, dones, infos = env.step(actions, is_train=False)
             # print(env.base_pos, env.base_lin_vel)
             if toggle_jump and reset_jump_toggle_iter == 0:
@@ -115,8 +134,27 @@ def main():
                     
             iter += 1
             
+            
+            # Render the camera
+            if env.cam_0 is not None:
+                rgb, _, _, _ = env.cam_0.render(
+                    rgb=True,
+                    depth=False,
+                    segmentation=False,
+                )
+                if args.save_data:
+                    images_buffer.append(rgb)
+                    commands_buffer.append([lin_x, lin_y, ang_z, base_height, toggle_jump*jump_height])
+            
             if dones.any():
                 iter = 0
+          
+    if args.save_data:
+        # save the images and commands
+        images_buffer = np.array(images_buffer)
+        commands_buffer = np.array(commands_buffer)
+        pickle.dump(images_buffer, open("images_buffer.pkl", "wb"))
+        pickle.dump(commands_buffer, open("commands_buffer.pkl", "wb"))
 
 if __name__ == "__main__":
     main()
