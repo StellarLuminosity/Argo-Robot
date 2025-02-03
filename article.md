@@ -90,7 +90,7 @@ In addition to the robot's internal state, user commands are also incorporated i
 
 - **Reference Robot Altitude**: $z_{ref}$ 
 
-With all these components combined, the final observation space is of the following dimensionality: $ \mathbb{R}^{48} $  
+With all these components combined, the final observation space is of the following dimensionality: $\mathbb{R}^{48}$  
 
 ### 3.3 Reward Design
 
@@ -188,8 +188,8 @@ During training, episodes are terminated when specific criteria are met to ensur
 
 - $| \textit{roll} | < \textit{roll}_{\textit{min}}$: Robot roll is below a certain threshold.  
 - $| \textit{pitch} | < \textit{pitch}_{\textit{min}}$: Robot pitch is below a certain threshold.  
-- $z > z_{\textit{min}}$: Robot altitude is above a minimum value.  
-- $\textit{steps} \geq \textit{max_steps}$: Maximum number of steps reached.  
+- $z > z_{\textit{min}}$: Robot altitude is above a minimum value.
+- $\textit{steps} \geq \textit{max_steps}$: Maximum number of steps reached.
 
 Here is an implementation for checking whether the robot is in a healthy state:
 
