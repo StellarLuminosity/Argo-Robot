@@ -47,35 +47,6 @@ To succesfully train a quadruped robot to walk in a RL environment, we need to d
 
 - **Episode Termination Condition**: Episodes are terminated when specific criteria are met to ensure the robot remains in a healthy and functional state.
 
-<Table
-    data={{
-        headers: ["Ingredient", "Role"],
-        rows: [
-            [
-                "Environment",
-                "Simulated or real-world space with physical constraints",
-            ],
-            [
-                "State",
-                "Observations (joint angles, velocities, etc.) that define the robot’s condition",
-            ],
-            [
-                "Action",
-                "Motor commands driving each joint",
-            ],
-            [
-                "Reward Function",
-                "Guides stable and efficient locomotion behaviors",
-            ],
-            [
-                "RL Framework",
-                "Algorithm for training (e.g., PPO), updating control policy",
-            ],
-        ],
-    }}
-/>
-
-
 ### 3.1 Actions
 
 The quadruped robot is equipped with 3 motors per leg, each controlled via position control. This setup results in a 12-dimensional action space, where each dimension corresponds to the reference position for one motor.
@@ -101,17 +72,17 @@ In our case, the robot's observation space will be composed of both the robot's 
 
 The main components of the observation space taking into account internal states are as follows:
 
-- **Base Linear Velocities**: $ v_x, v_y, v_z $
+- **Base Linear Velocities**: $v_x, v_y, v_z$
 
-- **Base Rotational Velocities**: $ w_x, w_y, w_z $
+- **Base Rotational Velocities**: $w_x, w_y, w_z$
 
-- **Orientation Angles**: $ \textit{roll, pitch} $
+- **Orientation Angles**: $\textit{roll, pitch}$
 
-- **Joint Positions**: $ q_{1..12} $
+- **Joint Positions**: $q_{1..12}$
 
-- **Joint Velocities**: $ \dot{q}_{1..12} $
+- **Joint Velocities**: $\dot{q}_{1..12}$
 
-- **Previous Actions**: $ a_{t-1} $
+- **Previous Actions**: $a_{t-1}$
 
 In addition to the robot's internal state, user commands are also incorporated into the observation space to allow for manual control, where an operator moves the robot through a joystick. Thus, the observation space will be enlarged with the following user command inputs:
 
@@ -299,10 +270,6 @@ for episode in range(num_episodes):
 
 Proximal Policy Optimization (PPO) is a widely used **on-policy** RL algorithm that improves policy learning by preventing overly large updates. It builds on policy gradient methods but introduces a clipping mechanism to ensure stable training.
 
-<Callout emoji="🤖">
-    <p>**On-Policy:** The agent learns by following and improving the same policy used to generate data. This means the policy is continuously updated based on its own experiences, leading to stable but sometimes slower learning compared to off-policy methods..</p>
-</Callout>
-
 The key idea in PPO is to optimize the policy by maximizing a clipped objective:
 
 $$
@@ -324,7 +291,9 @@ Bridging this gap is crucial for deploying AI systems in robotics, as the algori
 
 ### 5.1 Domain randomization
 
-### INSERIRE SCHEMINO RANDOMIZATION FEDE-STYLE
+<div><br>
+    <img src="./images/domain-randomization.png" alt="Global Trajectory" style="width:70%; height:auto;">
+</div><br>
 
 Instead of performing time-consuming and expensive system identification or gathering extensive real-world data, domain randomization deliberately introduces random variations in the simulated environment’s parameters during training, allowing us to artificially create a diverse range of simulation environments. This strategy forces the agent to adapt to a broader set of possible conditions, which in turn helps the model generalize better to real-world scenarios, where conditions may vary due to factors like friction, mechanical noise, etc.
 
@@ -356,11 +325,13 @@ By using domain randomization, robotic systems become more adaptable to the real
 
 ### 5.2 Adaptation Strategies
 
-### INSERIRE SCHEMINO GLOBALE ADAPTION FEDE-STYLE (COPIARE DISEGNO PAGINA 2 DEL PAPER: RMA)
-
 To improve the generalization of the robot across various environments, the policy can be conditioned on environment parameters $(\mu)$. By doing so, the robot can adjust its actions based on both its internal state and the dynamics of the environment. However, in real-world scenarios, these environment parameters are not precisely known. If they were, the problem would already be solved. 
 
 #### Latent Representation of Environment Parameters
+
+<div><br>
+    <img src="./images/domain-adaptation-training.png" alt="Global Trajectory" style="width:70%; height:auto;">
+</div><br>
 
 Fortunately, in simulation, the environment parameters are fully available. In this way, at the beginning of each training episode, a random set of environment parameters $\mu$ is sampled according to a probability distribution $p(\mu)$. These parameters can include friction, latency, sensor noise and other factors that influence the dynamics. Predicting the exact system parameters $\mu$ is often unnecessary and impractical, as it may lead to overfitting and poor real-world performance. Instead, a low-dimensional latent embedding $z$ is used. Once $\mu$ is sampled, the environment parameters are encoded into a compact latent space $z$ using an encoder function $e$, represented as:
 
@@ -384,6 +355,10 @@ Where:
 During training, both the encoder $e$ and policy $\pi$ are jointly optimized using gradient descent based on the reward signals, as a typical reinforcement learning problem. 
 
 #### Real-World Deployment: Adaptation Module
+
+<div><br>
+    <img src="./images/domain-adaptation-deployment.png" alt="Global Trajectory" style="width:70%; height:auto;">
+</div><br>
 
 In real-world deployment, the robot does not have access to the privileged environment parameters $\mu$. Instead, an *adaptation module* $(\phi)$ is employed to estimate the latent variable $\hat{z}_t$ online. This estimate is derived from the recent history of the robot's states $(x_{t-k:t-1})$ and actions $(a_{t-k:t-1})$:
 
