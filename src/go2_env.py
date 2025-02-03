@@ -40,6 +40,21 @@ class Go2Env:
         self.obs_scales = obs_cfg["obs_scales"]
         self.reward_scales = reward_cfg["reward_scales"]
 
+        # cpu = 0
+        # gpu = 1
+        # cuda = 2
+        # vulkan = 3
+        # metal = 4
+        # opengl = 5
+        if device == "cpu":
+            gs.init(backend=gs.cpu)
+        elif device == "gpu" or device == "cuda" or device == "vulkan" or device == "metal" or device == "opengl":
+            gs.init(backend=gs.gpu)
+
+
+        
+        
+
         # create scene
         self.scene = gs.Scene(
             sim_options=gs.options.SimOptions(dt=self.dt, substeps=2),
