@@ -136,9 +136,9 @@ Where:
 
 To keep the robot's joint poses close to a default configuration, a penalty is applied for large deviations from the default joint positions:
 
-$$
+```math
 R_{pose\_similarity} = \|q - q_{default}\|^2
-$$
+```
 
 Where:
 - $q$ is the current joint position.
@@ -148,9 +148,9 @@ Where:
 
 To ensure smooth control and discourage abrupt changes in actions, a penalty is applied based on the difference between consecutive actions:
 
-$$
+```math
 R_{action\_rate} = \|a_{t} - a_{t-1}\|^2
-$$
+```
 
 Where:
 - $a_t$ and $a_{t-1}$ are the actions at the current and previous time steps, respectively.
@@ -159,9 +159,9 @@ Where:
 
 To discourage unnecessary movement along the vertical ($z$) axis, a penalty is applied to the squared $z$-axis velocity of the base when the robot is not actively jumping. The reward is:
 
-$$
+```math
 R_{lin\_vel\_z} = v_{z}^2
-$$
+```
 
 Where:
 - $v_{z}$ is the vertical velocity of the base.
@@ -170,9 +170,9 @@ Where:
 
 To ensure the robot maintains stability, a penalty is applied to discourage large roll and pitch deviations of the base. This reward is:
 
-$$
+```math
 R_{roll\_pitch} = roll^2 + pitch^2
-$$
+```
 
 Where:
 - $roll$ is the roll angle of the base.
@@ -214,13 +214,13 @@ Whenever a termination condition is met, the episode must be reset, and the robo
 
 Specifically, the initial joint positions and velocities are perturbed by adding small random noise:
 
-$$
+```math
 q_{pos} = q_{pos\_init} + rand(low_{pos}, high_{pos})
-$$
+```
 
-$$
+```math
 q_{vel} = q_{vel\_init} + rand(low_{vel}, high_{vel})
-$$
+```
 
 Where:
 
