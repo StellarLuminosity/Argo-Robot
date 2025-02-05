@@ -1,7 +1,7 @@
 # Making Quadrupeds Learning to Walk: From Zero to Hero
 
 <div><br>
-    <img src="./images/go2.png" alt="Global Trajectory" style="width:60%; height:auto;">
+    <img src="./images/sim.gif" alt="Global Trajectory" style="width:80%; height:auto;">
 </div><br>
 
 Mobile robotics has reached a huge turning point. Thanks to the development and improvment of parallel computation and deep learning, robots are now able to learn complex tasks such as walking, running and jumping. The applications are endless, such as: ispection, search-and-rescue missions, entertainment and even healthcare.
