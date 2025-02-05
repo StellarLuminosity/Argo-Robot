@@ -86,7 +86,7 @@ The main components of the observation space taking into account internal states
 
 In addition to the robot's internal state, user commands are also incorporated into the observation space to allow for manual control, where an operator moves the robot through a joystick. Thus, the observation space will be enlarged with the following user command inputs:
 
-- **Reference Velocities**: $v^{ref}_{x}, v^{ref}_{y}, w^{ref}_{z}$
+- **Reference Velocities**: $v_x^{ref}, v_y^{ref}, w_z^{ref}$
 
 - **Reference Robot Altitude**: $z_{ref}$ 
 
@@ -105,7 +105,7 @@ R_{lin\_vel} = \exp[-\|v^{ref}_{xy} - v_{xy}\|^2]
 ```
 
 Where:
-- $v^{ref}_{xy} = [v^{ref}_{x}, v^{ref}_{y}]$ is the commanded velocity.
+- $v^{ref}_{xy} = [v_x^{ref}, v_y^{ref}]$ is the commanded velocity.
 - $v_{xy} = [v_x, v_y]$ is the actual velocity.
 
 #### 2. **Angular Velocity Tracking Reward**
@@ -186,10 +186,10 @@ This design ensures that the robot learns a balanced policy that prioritizes tra
 
 During training, episodes are terminated when specific criteria are met to ensure the robot remains in a healthy and functional state. The termination conditions include:
 
-- $| \textit{roll} | < \textit{roll}_{\textit{min}}$: Robot roll is below a certain threshold.  
-- $| \textit{pitch} | < \textit{pitch}_{\textit{min}}$: Robot pitch is below a certain threshold.  
-- $z > z_{\textit{min}}$: Robot altitude is above a minimum value.
-- $\textit{steps} \geq \textit{max_steps}$: Maximum number of steps reached.
+- $| \textit{roll} | > \textit{roll}_{\textit{min}}$: Robot roll is below a certain threshold.  
+- $| \textit{pitch} | > \textit{pitch}_{\textit{min}}$: Robot pitch is below a certain threshold.  
+- $z < z_{\textit{min}}$: Robot altitude is above a minimum value.
+- steps ≥ max_steps: Maximum number of steps reached.
 
 Here is an implementation for checking whether the robot is in a healthy state:
 
@@ -360,7 +360,7 @@ During training, both the encoder $e$ and policy $\pi$ are jointly optimized usi
     <img src="./images/domain-adaptation-deployment.png" alt="Global Trajectory" style="width:70%; height:auto;">
 </div><br>
 
-In real-world deployment, the robot does not have access to the privileged environment parameters $\mu$. Instead, an *adaptation module* $(\phi)$ is employed to estimate the latent variable $\hat{z}_t$ online. This estimate is derived from the recent history of the robot's states $(x_{t-k:t-1})$ and actions $(a_{t-k:t-1})$:
+In real-world deployment, the robot does not have access to the privileged environment parameters $\mu$. Instead, an *adaptation module* $(\phi)$ is employed to estimate the latent variable $\hat{z}_t$ online. This estimate is derived from the recent history of the robot's states $(x\_{t-k:t-1})$ and actions $(a\_{t-k:t-1})$:
 
 ```math
 \hat{z}_t = \phi(x_{t-k:t-1}, a_{t-k:t-1})
