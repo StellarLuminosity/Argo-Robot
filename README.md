@@ -390,10 +390,9 @@ The adaptation module $\phi$ runs asynchronously at a slower frequency, periodic
 
 ## 6. Key Works and Citations
 
+- **Federico Sarrocco, Leonardo Bertelli (2025)**: [*Making Quadrupeds Learning to Walk: From Zero to Hero*](https://federicosarrocco.com/blog/Making-Quadrupeds-Learning-To-Walk)
 - **Ashish Kumar (2022)**: [*Adapting Rapid Motor Adaptation for Bipedal Robots*](https://arxiv.org/pdf/2205.15299)
 - **Ashish Kumar (2021)**: [*RMA: Rapid Motor Adaptation for Legged Robots*](https://arxiv.org/pdf/2107.04034)
 - **Xue Bin Peng (2020)**: [*Learning Agile Robotic Locomotion Skills by
 Imitating Animals*](https://arxiv.org/pdf/2004.00784)
 - **Jie Tan (2018)**: [*Sim-to-Real: Learning Agile Locomotion For Quadruped Robots*](https://arxiv.org/pdf/1804.10332)
-
-
