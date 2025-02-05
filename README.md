@@ -1,4 +1,4 @@
-# Making Quadrupeds Learning to Walk: From Zero to Hero
+## Making Quadrupeds Learning to Walk: From Zero to Hero
 
 <div><br>
     <img src="./images/sim.gif" alt="Global Trajectory" style="width:80%; height:auto;">
