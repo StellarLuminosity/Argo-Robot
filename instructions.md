@@ -1,4 +1,4 @@
-# Locomotion Project
+# Quadrupeds Locomotion
 
 A reinforcement learning project for robot locomotion using RSL-RL framework.
 
