@@ -182,7 +182,7 @@ Where:
 
 This design ensures that the robot learns a balanced policy that prioritizes tracking commands, maintaining stability, and acting smoothly while adhering to physical constraints.
 
-### 3.4 Episode trmination condition
+### 3.4 Episode termination condition
 
 During training, episodes are terminated when specific criteria are met to ensure the robot remains in a healthy and functional state. The termination conditions include:
 
