@@ -41,7 +41,7 @@ def main():
 
     obs, _ = env.reset()
     
-    env.commands = torch.tensor([[0.5, 0.0, 0.0]]).to("cuda:0")
+    env.commands = torch.tensor([[0.5, 0.0, 0.0, 0.0, 0.0]]).to("cuda:0")
     iter = 0
     lin_x_range = [0.5, 4.0]
     with torch.no_grad():
@@ -51,7 +51,7 @@ def main():
             lin_x = lin_x_range[0] + (lin_x_range[1] - lin_x_range[0]) * (np.sin(2 * np.pi * iter / 600) + 1) / 2
             lin_x = float(lin_x)
             print(lin_x)
-            env.commands = torch.tensor([[lin_x, 0.0, 0.0]]).to("cuda:0")
+            env.commands = torch.tensor([[lin_x, 0.0, 0.0, 0.0, 0.0]]).to("cuda:0")
             obs, _, rews, dones, infos = env.step(actions, is_train=False)
             iter += 1
             if dones.any():

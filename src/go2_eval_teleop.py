@@ -123,7 +123,7 @@ def main():
                 
             actions = policy(obs)
             # print(f"toggle_jump: {toggle_jump}, jump_height: {jump_height}")
-            env.commands = torch.tensor([[lin_x, lin_y, ang_z, base_height, toggle_jump*jump_height]]).to("cuda:0").repeat(num_envs, 1)
+            env.commands = torch.tensor([[lin_x, lin_y, ang_z, base_height, toggle_jump*jump_height]], dtype=torch.float).to("cuda:0").repeat(num_envs, 1)
             obs, _, rews, dones, infos = env.step(actions, is_train=False)
             # print(env.base_pos, env.base_lin_vel)
             if toggle_jump and reset_jump_toggle_iter == 0:
